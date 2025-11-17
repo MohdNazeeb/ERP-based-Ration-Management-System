@@ -1,0 +1,635 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>User ERP Dashboard — Collapsible Sidebar + Logout</title>
+  <style>
+    :root{
+      --accent: #f7812c;
+      --accent-dark: #d96a1f;
+      --bg: #f4f4f9;
+      --panel-bg: #fff;
+      --muted: #ffe7d6;
+      --box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color:#222;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    header{
+      background: var(--accent);
+      color:white;
+      padding:18px 16px;
+      text-align:center;
+      font-weight:700;
+      font-size:20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+      position:relative;
+    }
+    .logout-btn{
+      position:absolute;
+      top:12px;
+      right:20px;
+      background:white;
+      color:var(--accent);
+      border:none;
+      padding:8px 16px;
+      border-radius:20px;
+      cursor:pointer;
+      font-weight:600;
+      transition:background 0.2s ease, color 0.2s ease;
+    }
+    .logout-btn:hover{
+      background:var(--accent-dark);
+      color:white;
+    }
+    .dashboard {
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      padding:18px;
+      height: calc(100vh - 72px);
+    }
+    .floating-dashboard{
+      flex-shrink: 0;
+      width:240px;
+      background:var(--panel-bg);
+      border:2px solid var(--accent);
+      border-radius:8px;
+      padding:12px;
+      box-shadow:var(--box-shadow);
+      height:100%;
+      overflow-y:auto;
+      overflow-x:hidden;
+      text-align:center;
+      position:relative;
+      transition: width 0.35s ease;
+    }
+    .floating-dashboard.collapsed{ 
+      width:60px; 
+      overflow: visible;
+    }
+    .floating-dashboard img{
+      width:100%;
+      height:auto;
+      border-radius:8px;
+      margin-bottom:10px;
+      transition:opacity 0.3s ease;
+    }
+    .floating-dashboard h3{
+      color:var(--accent);
+      margin-top:6px;
+      margin-bottom:10px;
+      text-align:center;
+      transition:opacity 0.3s ease;
+    }
+    .floating-dashboard nav{ transition: opacity 0.3s ease; }
+    .floating-dashboard.collapsed img,
+    .floating-dashboard.collapsed h3,
+    .floating-dashboard.collapsed nav{
+      opacity:0;
+      pointer-events:none;
+    }
+    .dashboard-btn{
+      display:block;
+      padding:10px;
+      border-radius:6px;
+      background:#ffe7d6;
+      margin:8px 0;
+      text-decoration:none;
+      color:#222;
+      font-weight:600;
+      text-align:center;
+      transition: all 0.2s ease;
+      position:relative;
+    }
+    .dashboard-btn:hover{
+      background:var(--accent);
+      color:white;
+    }
+    .toggle-dashboard-btn{
+      position:absolute;
+      top:18px;
+      right:-10px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:none;
+      background:var(--accent);
+      color:white;
+      font-size:18px;
+      cursor:pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transition: background 0.2s ease;
+      z-index:10;
+    }
+    .toggle-dashboard-btn:hover{ background:var(--accent-dark); }
+    .main-content{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      background:var(--panel-bg);
+      border-radius:8px;
+      padding:16px;
+      box-shadow:var(--box-shadow);
+      height:100%;
+      overflow:auto;
+    }
+    .announcement-wrapper{
+      position:relative;
+      flex-shrink:0;
+      height:100%;
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-end;
+    }
+    .announcement-box{
+      width:300px;
+      min-width:44px;
+      background:var(--panel-bg);
+      border:2px solid var(--accent);
+      border-radius:8px;
+      padding:12px;
+      box-shadow:var(--box-shadow);
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      transition: width 300ms ease;
+      position:relative;
+    }
+    .announcement-box.collapsed{
+      width:44px;
+      padding-left:8px;
+      padding-right:8px;
+      opacity:0.95;
+    }
+    .announcement-header{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .announcement-header h2{
+      margin:0;
+      font-size:16px;
+      color:var(--accent);
+      text-align:center;
+      flex:1;
+    }
+    .announcement-list{
+      overflow-y:auto;
+      overflow-x:hidden;
+      max-height: calc(100% - 56px);
+      padding-right:8px;
+      scrollbar-width: thin; 
+    }
+    .announcement-list::-webkit-scrollbar{ width:8px; }
+    .announcement-list::-webkit-scrollbar-thumb{ background: #d0d0d0; border-radius:8px; }
+    .announcement-item{
+      background:var(--muted);
+      border-left:5px solid var(--accent);
+      padding:8px 10px;
+      margin-bottom:10px;
+      border-radius:5px;
+      font-size:14px;
+    }
+    .collapse-btn{
+      position:absolute;
+      right:-18px;
+      top:18px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:none;
+      background:var(--accent);
+      color:white;
+      font-size:18px;
+      cursor:pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transition: background 0.2s ease;
+      z-index:10;
+    }
+    .collapse-btn:hover{ background:var(--accent-dark); }
+    .announcement-box.collapsed .announcement-header h2,
+    .announcement-box.collapsed .announcement-list{
+      opacity:0;
+      pointer-events:none;
+      transform: translateX(-6px);
+    }
+    @media (max-width: 950px){
+      .dashboard{ flex-direction:column; height:auto; padding-bottom:40px; }
+      .announcement-wrapper{ width:100%; order:3; }
+      .announcement-box{ max-width:100%; width:100%; }
+    }
+    #bookedSlotBox {
+      margin-top:15px;
+      border:2px solid var(--accent);
+      border-radius:8px;
+      padding:10px;
+      background: var(--muted);
+      text-align:center;
+      font-weight:600;
+      font-size:16px;
+      color:#333;
+    }
+
+    /* Uploaded Documents Box */
+    #uploadedDocsBox {
+      display:none;
+      flex-direction:column;
+      position:fixed;
+      top:50px;
+      left:50px;
+      background:var(--accent);
+      color:white;
+      padding:12px;
+      border-radius:8px;
+      width:220px;
+      max-height:300px;
+      overflow-y:auto;
+      z-index:1000;
+      box-shadow:0 4px 12px rgba(0,0,0,0.25);
+      cursor:move;
+    }
+    #uploadedDocsBox h4{
+      margin:0 0 8px 0;
+      font-size:16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    #uploadedDocsBox ul{
+      list-style:none;
+      margin:0;
+      padding:0;
+    }
+    #uploadedDocsBox ul li{
+      margin-bottom:6px;
+      font-size:14px;
+      word-break:break-all;
+    }
+    #closeUploadedDocsBtn{
+      background:white;
+      color:var(--accent);
+      border:none;
+      border-radius:4px;
+      padding:2px 6px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:12px;
+    }
+
+    /* Biometric Status Box */
+    #biometricBox {
+      display:none;
+      position:fixed;
+      top:80px;
+      left:50%;
+      transform:translateX(-50%);
+      background:red;
+      color:white;
+      font-weight:700;
+      padding:20px 25px;
+      border-radius:8px;
+      z-index:2000;
+      box-shadow:0 0 15px red, 0 0 30px orange;
+      animation: glow 1.5s infinite alternate;
+      cursor:move;
+      min-width:120px;
+      text-align:center;
+    }
+    #biometricBox span#statusText {
+      font-size:16px;
+    }
+    #biometricBox button#closeBiometricBtn {
+      position:absolute;
+      top:4px;
+      right:6px;
+      background:transparent;
+      border:none;
+      color:white;
+      font-size:18px;
+      cursor:pointer;
+    }
+    @keyframes glow {
+      0% { box-shadow: 0 0 5px red, 0 0 10px orange; }
+      50% { box-shadow: 0 0 15px red, 0 0 30px orange; }
+      100% { box-shadow: 0 0 5px red, 0 0 10px orange; }
+    }
+    /* Blinking dot on sidebar button */
+    .blinking-dot {
+      position:absolute;
+      top:8px;
+      right:10px;
+      width:10px;
+      height:10px;
+      background:red;
+      border-radius:50%;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink{
+      0%,50%,100%{opacity:1;}
+      25%,75%{opacity:0;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    राशन प्रतिपूर्ति एवं वितरण ऑनलाइन प्रणाली
+    <a href="/logout/" class="logout-btn">Logout</a>
+  </header>
+
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="floating-dashboard" id="sidebar">
+      <button class="toggle-dashboard-btn" id="toggleSidebar" title="Collapse / Expand">⮜</button>
+      {%if user.image%}
+      <img src= "{{user.image.url}}" alt="A4 Dashboard Image">
+      {%else %}
+      <img src="/media/users/default_user.jpeg" alt="Default Profile Photo" width="150">
+      {% endif %}
+      <h3>Dashboard</h3>
+      <nav>
+        <a href="permanent.html/Guide.pdf" class="dashboard-btn" target="_blank">Guide</a>
+        <a href="#" class="dashboard-btn" id="downloadDocBtn">Download Document</a>
+        <a href="#" class="dashboard-btn" id="biometricBtn">Biometric Status <span class="blinking-dot"></span></a>
+        <a href="#" class="dashboard-btn" id="uploadDocBtn">Upload Document</a>
+        <a href="permanent.html/law.html" class="dashboard-btn">Know Your Rights</a>
+        <a href="https://nfsa.gov.in/portal/ration_card_state_portals_aa" class="dashboard-btn" target="_blank">Link to Official Site</a>
+        <a href="permanent.html/contactus.html" class="dashboard-btn">Contact Us</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <section style="display:flex; gap:18px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px; border:2px solid var(--accent); border-radius:8px; padding:12px; box-shadow:var(--box-shadow);">
+          <h3 style="margin-top:0;color:var(--accent);text-align:center;">User Information</h3>
+          <p><strong>Name:</strong> {{user.full_name}}</p>
+          <p><strong>Ration Card No:</strong> {{user.card_number}}</p>
+          <p><strong>Mobile:</strong> {{user.mobile_number}}</p>
+        </div>
+
+        <div style="flex:1; min-width:220px; border:2px solid var(--accent); border-radius:8px; padding:12px; box-shadow:var(--box-shadow);">
+          <h3 style="margin-top:0;color:var(--accent);text-align:center;">Distributor Info</h3>
+          <p><strong>Name:</strong> {{distributor_name}}</p>
+          <p><strong>Shop ID:</strong> {{shop_id}}</p>
+          <p><strong>Contact:</strong> {{distributor_contact}}</p>
+          <p><strong>Address:</strong> {{distributor_address}}</p>
+        </div>
+      </section>
+
+      <!-- BOOK YOUR SLOT SECTION -->
+      <section style="margin-top:18px; border:2px solid var(--accent); padding:12px; border-radius:8px;">
+        <h3 style="margin-top:0;color:var(--accent);text-align:center;">Book Your Ration Slot</h3>
+        <div style="max-width:420px;margin:0 auto;">
+          <select id="daySelect" style="width:100%;padding:10px;border-radius:6px;border:1px solid #ccc;">
+            <option value="">-- Select Day --</option>
+            <option value="Monday">Monday (5 slots left)</option>
+            <option value="Wednesday">Wednesday (2 slots left)</option>
+            <option value="Friday">Friday (4 slots left)</option>
+          </select>
+          <button onclick="bookSlot()" style="width:100%;margin-top:10px;padding:10px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;">Book Slot</button>
+          <p id="bookingStatus" style="text-align:center;margin-top:8px;font-weight:700;color:green;"></p>
+
+          <div id="bookedSlotBox">
+            Current Booked Slot: <span id="bookedSlotValue">NULL</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FULL HEIGHT DISCLAIMER -->
+      <p style="
+          margin-top:12px; 
+          font-size:12px; 
+          color:red; 
+          text-align:center; 
+          width:100%; 
+          padding:20px; 
+          border:1px solid red;
+          background-color:#ffe5e5;
+          border-radius:6px;
+          box-sizing:border-box;
+          flex-grow:1; 
+          min-height:150px;
+      ">
+        Disclaimer: This website is not an official government site. All information, slots, or management-related services provided here are for informational purposes only. The administrators of this site are not responsible for any issues, discrepancies, or claims related to ration slot bookings or distribution management.
+      </p>
+    </main>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="announcement-wrapper">
+      <div class="announcement-box" id="announcementBox">
+        <div class="announcement-header">
+          <h2>Announcements</h2>
+        </div>
+        <div class="announcement-list">
+          <div class="announcement-item">Ration distribution starts Monday.</div>
+          <div class="announcement-item">Carry your ration card & Aadhaar ID.</div>
+          <div class="announcement-item">Stock update by 15th October.</div>
+          <div class="announcement-item">Holiday on Tuesday — no distribution.</div>
+          <div class="announcement-item">New ration quota available from 20th October.</div>
+          <div class="announcement-item">Digital KYC verification extended till 25th October.</div>
+          <div class="announcement-item">Offline collection hours: 9 AM to 2 PM.</div>
+          <div class="announcement-item">Bring your registered mobile for OTP verification.</div>
+          <div class="announcement-item">Helpline number updated: 1800-200-999.</div>
+          <div class="announcement-item">Next distributor meeting scheduled on 12th Nov.</div>
+          <div class="announcement-item">Check biometric machines regularly for sync.</div>
+          <div class="announcement-item">Distribution tokens to be issued by 8 AM daily.</div>
+          <div class="announcement-item">Online ration request option under testing.</div>
+          <div class="announcement-item">System maintenance scheduled for 18th Oct.</div>
+          <div class="announcement-item">Special distribution drive for BPL families next week.</div>
+        </div>
+      </div>
+      <button class="collapse-btn" id="collapseBtn">⮜</button>
+    </div>
+  </div>
+
+  <!-- Uploaded Documents Box -->
+  <div id="uploadedDocsBox">
+    <h4>Uploaded Documents <button id="closeUploadedDocsBtn">X</button></h4>
+    <ul id="uploadedDocsList"></ul>
+  </div>
+
+  <!-- Biometric Status Box -->
+  <div id="biometricBox">
+    <button id="closeBiometricBtn">×</button>
+    <span id="statusText">ACTIVE</span>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept="application/pdf" style="display:none" />
+
+  <script>
+    // Book slot function
+    function bookSlot(){
+      const sel = document.getElementById('daySelect');
+      const status = document.getElementById('bookingStatus');
+      const bookedSlot = document.getElementById('bookedSlotValue');
+
+      if(!sel.value){
+        status.style.color='crimson';
+        status.textContent='Please select a day first!';
+        return;
+      }
+
+      status.style.color='green';
+      status.textContent = `Your slot for ${sel.value} has been successfully booked!`;
+      bookedSlot.textContent = sel.value;
+
+      sel.value = '';
+      setTimeout(()=> status.textContent='', 4000);
+    }
+
+    function logout(){
+      alert("You have been logged out successfully!");
+      window.location.href = "index.html";
+    }
+
+    // Sidebar collapse
+    const collapseBtn = document.getElementById('collapseBtn');
+    const announcementBox = document.getElementById('announcementBox');
+    collapseBtn.addEventListener('click', ()=>{
+      const collapsed = announcementBox.classList.toggle('collapsed');
+      collapseBtn.textContent = collapsed ? '⮞' : '⮜';
+    });
+
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+    toggleSidebar.addEventListener('click', ()=>{
+      const collapsed = sidebar.classList.toggle('collapsed');
+      toggleSidebar.textContent = collapsed ? '⮞' : '⮜';
+    });
+
+    // Upload & Download Documents
+    const uploadedDocsBox = document.getElementById('uploadedDocsBox');
+    const uploadedDocsList = document.getElementById('uploadedDocsList');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadDocBtn');
+    const downloadBtn = document.getElementById('downloadDocBtn');
+    const closeUploadedDocsBtn = document.getElementById('closeUploadedDocsBtn');
+
+    let uploadedDocs = [];
+
+    uploadBtn.addEventListener('click', (e)=>{
+      fileInput.click();
+      e.stopPropagation();
+    });
+
+    fileInput.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(file){
+        uploadedDocs.push(file);
+        alert(file.name + ' uploaded successfully!');
+      }
+      fileInput.value = '';
+    });
+
+    downloadBtn.addEventListener('click', (e)=>{
+      uploadedDocsList.innerHTML = '';
+      if(uploadedDocs.length === 0){
+        const li = document.createElement('li');
+        li.textContent = 'No document uploaded';
+        uploadedDocsList.appendChild(li);
+      } else {
+        uploadedDocs.forEach(doc=>{
+          const li = document.createElement('li');
+          const link = document.createElement('a');
+          link.textContent = doc.name;
+          link.href = URL.createObjectURL(doc);
+          link.download = doc.name;
+          link.style.color='white';
+          link.style.textDecoration='underline';
+          li.appendChild(link);
+          uploadedDocsList.appendChild(li);
+        });
+      }
+      uploadedDocsBox.style.display='flex';
+      e.stopPropagation();
+    });
+
+    closeUploadedDocsBtn.addEventListener('click', ()=>{
+      uploadedDocsBox.style.display='none';
+    });
+
+    document.addEventListener('click', ()=>{
+      uploadedDocsBox.style.display='none';
+      biometricBox.style.display='none';
+    });
+
+    uploadedDocsBox.addEventListener('click', (e)=> e.stopPropagation());
+    sidebar.querySelectorAll('.dashboard-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        if(btn.id !== 'downloadDocBtn' && btn.id !== 'uploadDocBtn'){
+          uploadedDocsBox.style.display='none';
+        }
+      });
+    });
+
+    // Make uploadedDocsBox draggable
+    let isDragging = false, offsetX = 0, offsetY = 0;
+    uploadedDocsBox.addEventListener('mousedown', (e)=>{
+      isDragging = true;
+      offsetX = e.clientX - uploadedDocsBox.offsetLeft;
+      offsetY = e.clientY - uploadedDocsBox.offsetTop;
+      uploadedDocsBox.style.cursor = 'grabbing';
+    });
+    document.addEventListener('mousemove', (e)=>{
+      if(!isDragging) return;
+      uploadedDocsBox.style.left = (e.clientX - offsetX) + 'px';
+      uploadedDocsBox.style.top = (e.clientY - offsetY) + 'px';
+    });
+    document.addEventListener('mouseup', ()=>{
+      isDragging = false;
+      uploadedDocsBox.style.cursor = 'move';
+    });
+
+    // Biometric Box Logic
+    const biometricBox = document.getElementById('biometricBox');
+    const biometricBtn = document.getElementById('biometricBtn');
+    const closeBiometricBtn = document.getElementById('closeBiometricBtn');
+
+    // Example distributor-set status
+    let biometricStatus = 'ACTIVE'; // or 'INACTIVE'
+
+    biometricBtn.addEventListener('click', (e)=>{
+      biometricBox.querySelector('#statusText').textContent = biometricStatus;
+      biometricBox.style.display = 'block';
+      e.stopPropagation();
+    });
+
+    closeBiometricBtn.addEventListener('click', ()=>{
+      biometricBox.style.display='none';
+    });
+
+    biometricBox.addEventListener('click', e=> e.stopPropagation());
+
+    // Make biometricBox draggable
+    let draggingBio = false, bioOffsetX = 0, bioOffsetY = 0;
+    biometricBox.addEventListener('mousedown', e=>{
+      draggingBio = true;
+      bioOffsetX = e.clientX - biometricBox.offsetLeft;
+      bioOffsetY = e.clientY - biometricBox.offsetTop;
+      biometricBox.style.cursor='grabbing';
+    });
+    document.addEventListener('mousemove', e=>{
+      if(!draggingBio) return;
+      biometricBox.style.left = (e.clientX - bioOffsetX) + 'px';
+      biometricBox.style.top = (e.clientY - bioOffsetY) + 'px';
+    });
+    document.addEventListener('mouseup', ()=>{
+      draggingBio=false;
+      biometricBox.style.cursor='move';
+    });
+  </script>
+</body>
+</html>

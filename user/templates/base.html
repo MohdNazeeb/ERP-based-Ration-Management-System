@@ -1,0 +1,32 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ration Management{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- header + nav -->
+  <header>
+    <h2>राशन प्रतिपूर्ति एवं वितरण ऑनलाइन प्रणाली</h2>
+    <p class="kkl">उत्तर प्रदेश</p>
+    <div class="scrolling-text">Ration Management and Distribution Online System</div>
+  </header>
+  <nav>IMPORTANT LINKS</nav>
+
+  <!-- page content block -->
+  {% block content %}{% endblock %}
+
+  <!-- footer -->
+  <footer>
+    This website is designed and developed by <strong>PSIT (Pranveer Singh Institute of Technology) Students</strong><br>
+    Maintained by Social Welfare, Backward Class Welfare, Minorities Welfare, and Tribal Welfare Departments
+  </footer>
+
+  <script src="/static/js/script.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

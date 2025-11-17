@@ -1,0 +1,94 @@
+<!-- templates/distributor_register.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Distributor Registration - Ration Management System {% endblock %}
+
+{% block content %}
+
+<div class="container distributor-box">
+  <h3>Distributor Registration Portal</h3>
+
+  <form id="distributorRegisterForm" method="post" enctype="multipart/form-data"
+    action="{% url 'distributor_register' %}">
+    {% csrf_token %}
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+        {{ message }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="form-group">
+      <label>Distributor Name :</label>
+      <input type="text" name="name" placeholder="Enter full name" required />
+    </div>
+
+    <div class="form-group">
+      <label>Shop ID :</label>
+      <input type="text" name="shop_id" placeholder="Enter Shop ID" required />
+    </div>
+
+    <div class="form-group">
+      <label>License No. :</label>
+      <input type="text" name="license_number" placeholder="License Number" required />
+    </div>
+
+    <div class="form-group">
+      <label>दुकान का पता :</label>
+      <input type="text" name="shop_address" placeholder="अपनी दुकान का पूरा पता दर्ज करें" required />
+    </div>
+
+    <div class="form-group">
+      <label>अपलोड फोटो (jpg format) :</label>
+      <input type="file" id="shopPhoto" name="shop_photo" accept=".jpg,.jpeg" />
+    </div>
+    <img id="shopPhotoPreview" class="preview-img" alt="Shop Photo Preview" />
+
+    <div class="form-group">
+      <label>Mobile Number :</label>
+      <div class="otp-container">
+        <input type="tel" id="distMobile" name="mobile" pattern="[0-9]{10}" maxlength="10"
+          placeholder="Enter 10-digit mobile number" required />
+        <button type="button" id="sendDistOTP">Send OTP</button>
+      </div>
+    </div>
+
+    <!-- <div class="form-group">
+      <label>Enter OTP :</label>
+      <input type="text" id="distOTP" name="otp" placeholder="Enter received OTP" required />
+    </div> -->
+
+    <div class="form-group">
+      <label>Email ID :</label>
+      <input type="email" name="email" placeholder="Enter valid email" required />
+    </div>
+
+    <div class="form-group">
+      <label>Create Password :</label>
+      <input type="password" name="password" placeholder="Enter password" required />
+    </div>
+
+    <div class="form-group">
+      <label>Confirm Password :</label>
+      <input type="password" name="confirm_password" placeholder="Re-enter password" required />
+    </div>
+
+    <div style="text-align:center;">
+      <button type="submit">Register Distributor</button>
+    </div>
+    <p style="margin-top:10px;">
+      Already have an account? <a href="{% url 'distributor_login'%}">Login here</a>
+    </p>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  previewImage('shopPhoto', 'shopPhotoPreview');
+</script>
+{% endblock %}

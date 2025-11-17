@@ -1,0 +1,28 @@
+<!-- templates/ekyc.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}e-KYC - Ration Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 style="text-align:center; color:maroon;">ई-केवाईसी / e-KYC</h2>
+
+  <form id="ekycForm" method="post" action="{% url 'ekyc' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>राशन कार्ड नंबर :</label>
+      <input type="text" name="ration_no" placeholder="राशन कार्ड नंबर दर्ज करें" required />
+    </div>
+
+    <div class="form-group">
+      <label>आधार नंबर :</label>
+      <input type="text" name="aadhaar" maxlength="12" pattern="[0-9]{12}" placeholder="12 अंकों का आधार नंबर दर्ज करें" required />
+    </div>
+
+    <div style="text-align:center;">
+      <button type="submit">Submit e-KYC</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

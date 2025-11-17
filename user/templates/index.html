@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home - Ration Management System{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align:center; padding:40px 20px;">
+  <h2 style="color:maroon; margin-bottom:20px;">राशन प्रतिपूर्ति एवं वितरण ऑनलाइन प्रणाली</h2>
+  <p style="color:#333; font-size:16px;">
+    उत्तर प्रदेश सरकार द्वारा नागरिकों के लिए बनाया गया एकीकृत राशन प्रबंधन पोर्टल।
+    कृपया नीचे दिए गए विकल्पों में से अपनी सुविधा चुनें:
+  </p>
+
+  <div style="margin-top:40px; display:flex; flex-wrap:wrap; justify-content:center; gap:20px;">
+    <a href="{% url 'register' %}" class="home-btn">नया पंजीकरण / Register</a>
+    <a href="{% url 'login' %}" class="home-btn">लॉगिन / Login</a>
+    <a href="{% url 'ekyc' %}" class="home-btn">ई-केवाईसी / e-KYC</a>
+    <a href="{% url 'distributor_login' %}" class="home-btn">डिस्ट्रिब्यूटर लॉगिन / Distributor Portal</a>
+  </div>
+
+  <div style="margin-top:60px; color:#555;">
+    <h4>महत्वपूर्ण सूचना:</h4>
+    <ul style="list-style:none; padding:0;">
+      <li>✔ कृपया अपने राशन कार्ड की जानकारी सही-सही भरें।</li>
+      <li>✔ OTP और कैप्चा डालते समय सावधानी बरतें।</li>
+      <li>✔ अपने लॉगिन क्रेडेंशियल्स किसी के साथ साझा न करें।</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.home-btn {
+  display:inline-block;
+  padding:14px 26px;
+  background:linear-gradient(135deg, maroon, darkred);
+  color:white;
+  text-decoration:none;
+  border-radius:10px;
+  font-size:16px;
+  transition:0.3s ease;
+}
+.home-btn:hover {
+  background:linear-gradient(135deg, darkred, maroon);
+  transform:scale(1.05);
+}
+</style>
+{% endblock %}

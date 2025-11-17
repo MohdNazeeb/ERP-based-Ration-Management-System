@@ -1,0 +1,32 @@
+<!-- templates/distributor_login.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Distributor Portal - Ration Management System{% endblock %}
+
+{% block content %}
+<div class="container distributor-box">
+  <h3>Distributor Login Portal</h3>
+
+  <form id="distributorForm" method="post" action="{% url 'distributor_login' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>License Number:</label>
+      <input type="text" name="license_number" placeholder="अपनी आईडी दर्ज करें" required />
+    </div>
+
+    <div class="form-group">
+      <label>पासवर्ड :</label>
+      <input type="password" name="password" placeholder="पासवर्ड दर्ज करें" required />
+    </div>
+
+    <div style="text-align:center;">
+      <button type="submit">Login</button>
+    </div>
+  </form>
+
+  <div class="distributor-register-link">
+    <p>New distributor? <a href="{% url 'distributor_register' %}">Click here to register</a></p>
+  </div>
+</div>
+{% endblock %}

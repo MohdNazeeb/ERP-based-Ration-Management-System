@@ -1,0 +1,847 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Distributor Dashboard — Ration Distribution</title>
+  <style>
+    :root {
+      --accent: #f7812c;
+      --accent-dark: #d96a1f;
+      --bg: #f4f4f9;
+      --panel-bg: #fff;
+      --muted: #ffe7d6;
+      --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: #222;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 18px 16px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+      position: relative;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 12px;
+      right: 20px;
+      background: white;
+      color: var(--accent);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      background: var(--accent-dark);
+      color: white;
+    }
+
+    .dashboard {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding: 18px;
+      height: calc(100vh - 72px);
+    }
+
+    .floating-dashboard {
+      flex-shrink: 0;
+      width: 260px;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--box-shadow);
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      text-align: center;
+      position: relative;
+      transition: width 0.35s ease;
+    }
+
+    .floating-dashboard.collapsed {
+      width: 64px;
+      overflow: visible;
+    }
+
+    .floating-dashboard img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: opacity 0.3s ease;
+    }
+
+    .floating-dashboard h3 {
+      color: var(--accent);
+      margin-top: 6px;
+      margin-bottom: 10px;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+
+    .floating-dashboard nav {
+      transition: opacity 0.3s ease;
+    }
+
+    .floating-dashboard.collapsed img,
+    .floating-dashboard.collapsed h3,
+    .floating-dashboard.collapsed nav {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .dashboard-btn {
+      display: block;
+      padding: 10px;
+      border-radius: 6px;
+      background: #ffe7d6;
+      margin: 8px 0;
+      text-decoration: none;
+      color: #222;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.2s ease;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .dashboard-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .toggle-dashboard-btn {
+      position: absolute;
+      top: 5%;
+      right: -10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transition: background 0.2s ease;
+      z-index: 10;
+    }
+
+    .toggle-dashboard-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-bg);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--box-shadow);
+      height: 100%;
+      overflow: auto;
+    }
+
+    .announcement-wrapper {
+      position: relative;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+    }
+
+    .announcement-box {
+      width: 320px;
+      min-width: 64px;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--box-shadow);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      transition: width 300ms ease;
+      position: relative;
+    }
+
+    .announcement-box.collapsed {
+      width: 64px;
+      padding-left: 8px;
+      padding-right: 8px;
+      opacity: 0.95;
+    }
+
+    .announcement-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .announcement-header h2 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--accent);
+      text-align: center;
+      flex: 1;
+    }
+
+    .announcement-list {
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: calc(100% - 120px);
+      padding-right: 8px;
+      scrollbar-width: thin;
+    }
+
+    .announcement-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .announcement-list::-webkit-scrollbar-thumb {
+      background: #d0d0d0;
+      border-radius: 8px;
+    }
+
+    .announcement-item {
+      background: var(--muted);
+      border-left: 5px solid var(--accent);
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .announcement-item button {
+      background: transparent;
+      border: none;
+      color: var(--accent-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .collapse-btn {
+      position: absolute;
+      right: -18px;
+      top: 5%;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      transition: background 0.2s ease;
+      z-index: 10;
+    }
+
+    .collapse-btn:hover {
+      background: var(--accent-dark);
+    }
+
+    .announcement-box.collapsed .announcement-header h2,
+    .announcement-box.collapsed .announcement-list {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-6px);
+    }
+
+    .panel {
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--box-shadow);
+      background: var(--panel-bg);
+      margin-bottom: 12px;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    /* Glow effect */
+    .glow {
+      animation: glowAnim 1s infinite alternate;
+      border-color: gold !important;
+      box-shadow: 0 0 12px gold, 0 0 20px gold;
+    }
+
+    @keyframes glowAnim {
+      0% {
+        box-shadow: 0 0 5px gold, 0 0 10px gold;
+      }
+
+      50% {
+        box-shadow: 0 0 12px gold, 0 0 20px gold;
+      }
+
+      100% {
+        box-shadow: 0 0 5px gold, 0 0 10px gold;
+      }
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .flex-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    table th,
+    table td {
+      padding: 8px;
+      border: 1px solid #eee;
+      text-align: left;
+    }
+
+    .btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn-approve {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-reject {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 950px) {
+      .dashboard {
+        flex-direction: column;
+        height: auto;
+        padding-bottom: 40px;
+      }
+
+      .announcement-wrapper {
+        width: 100%;
+        order: 3;
+      }
+
+      .announcement-box {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
+    /* Disclaimer spacing adjustments */
+    .panel-disclaimer {
+      border: 1px solid red;
+      background-color: #ffe5e5;
+      color: red;
+    }
+
+    .panel-disclaimer p {
+      margin-top: 2px;
+      line-height: 1.5em;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    राशन प्रतिपूर्ति एवं वितरण — Distributor Dashboard
+    <a href="/distributor_logout/" class="logout-btn">Logout</a>
+    <!-- <button class="logout-btn" onclick="logout()">Logout</button> -->
+  </header>
+
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <aside class="floating-dashboard" id="sidebar">
+      <button class="toggle-dashboard-btn" id="toggleSidebar" title="Collapse / Expand">⮜</button>
+      {%if user.image%}
+      <img src="{{user.image.url}}" alt="A4 Dashboard Image">
+      {%else %}
+      <img src="/media/users/default_user.jpeg" alt="Default Profile Photo" width="150">
+      {% endif %}
+      <h3>Distributor</h3>
+      <nav>
+        <a class="dashboard-btn" id="viewRequestsBtn">View Requests</a>
+        <a class="dashboard-btn" id="slotMgmtBtn">Slot Management</a>
+        <a class="dashboard-btn" id="bioToggleBtn">Biometric Control</a>
+        <a class="dashboard-btn" id="downloadPdfBtn">Download Booked Slots (PDF)</a>
+        <a class="dashboard-btn" id="uploadDocBtn">Upload Document</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+      <section class="flex-row" style="margin-bottom:12px;">
+        <div class="panel" style="flex:1; min-width:220px;">
+          <h3>Distributor Info</h3>
+          <p><strong>Name:</strong> Ram Kumar</p>
+          <p><strong>Shop ID:</strong> DIST-0089</p>
+          <p><strong>Contact:</strong> 8765432109</p>
+          <p><strong>Address:</strong> Main Market, Lucknow</p>
+        </div>
+
+        <div class="panel" style="flex:1; min-width:220px;">
+          <h3>System Status</h3>
+          <p><strong>Biometric:</strong> <span id="sysBiometricStatus">UNKNOWN</span></p>
+          <p><strong>Pending Requests:</strong> <span id="pendingCount">0</span></p>
+          <p><strong>Distribution From:</strong> <span id="sysDistFrom">null</span></p>
+          <p><strong>Distribution To:</strong> <span id="sysDistTo">null</span></p>
+          <p><strong>Start Time:</strong> <span id="sysStartTime">--:--</span></p>
+          <p><strong>End Time:</strong> <span id="sysEndTime">--:--</span></p>
+        </div>
+      </section>
+
+      <section class="flex-row" style="gap:18px;">
+        <div class="panel" id="pendingRequestsPanel" style="flex:2; min-width:320px;">
+          <h3>Pending Slot Requests</h3>
+          <div id="requestsContainer"></div>
+        </div>
+
+        <div class="panel" id="slotMgmtPanel" style="flex:1; min-width:240px;">
+          <h3>Slot Management</h3>
+          <div class="flex-col">
+            <label>Distribution From: <input type="date" id="distFrom" /></label>
+            <label>Distribution To: <input type="date" id="distTo" /></label>
+            <label>Start Time: <input type="time" id="startTime" step="60"></label>
+            <label>End Time: <input type="time" id="endTime" step="60"></label>
+            <label>Set Limit:
+              <input type="number" id="limitInput" placeholder="e.g., 50" min="1"
+                style="padding:6px;border:1px solid #ccc;border-radius:6px;width:100%;"></label>
+
+          </div>
+          <p style="font-size:13px;color:#555;margin-top:8px;">Use these to set distribution dates and timing.</p>
+          <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+            <label><input type="checkbox" id="confirmChk"> Confirm</label>
+            <button class="btn btn-small" id="applyBtn">Upload</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="flex-row" style="margin-top:12px;">
+        <div class="panel" id="biometricPanel" style="flex:1 1 360px;">
+          <h3>Biometric Status</h3>
+          <p style="font-size:14px;color:#333;">Current biometric status is displayed below.</p>
+          <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+            <div style="font-weight:700;">Status:</div>
+            <div id="bioStatusBadge" style="padding:6px 10px;border-radius:6px;background:#ddd;font-weight:700;">UNKNOWN
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button class="btn" id="bioToggleControl" style="background:#007bff;color:white;">Toggle (Active /
+              Inactive)</button>
+          </div>
+        </div>
+
+        <div class="panel" style="flex:1 1 300px;">
+          <h3>Announcements</h3>
+          <div class="flex-col">
+            <input id="announceInput" placeholder="Write new announcement..."
+              style="padding:8px;border-radius:6px;border:1px solid #ccc;">
+            <button class="btn" id="addAnnBtn" style="background:var(--accent); color:white;">Publish
+              Announcement</button>
+          </div>
+          <p style="margin-top:4px;font-size:13px;color:#555;">Announcements you publish here will persist locally and
+            appear in the announcements panel.</p>
+        </div>
+      </section>
+
+      <section style="margin-top:20px;">
+        <div class="panel panel-disclaimer">
+          <h3>Disclaimer</h3>
+          <p style="font-size:15px;"></p>
+          This website is not an official government site. All information, slots, or management-related services
+          provided here are for informational purposes only. The administrators of this site are not responsible for any
+          issues, discrepancies, or claims related to ration slot bookings or distribution management.
+          </p>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="announcement-wrapper">
+      <div class="announcement-box" id="announcementBox">
+        <div class="announcement-header">
+          <h2>Announcements</h2>
+        </div>
+        <div class="announcement-list" id="announcementList"></div>
+      </div>
+      <button class="collapse-btn" id="collapseBtn">⮜</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    const LS_ANN = 'dist_announcements_v1';
+    const LS_REQS = 'dist_pending_requests_v1';
+    const LS_BIO = 'dist_biometric_v1';
+
+    const sampleRequests = [
+      { id: 'REQ-001', name: 'Jatin Sharma', card: '1234-5678-9012', date: '2025-10-12', status: 'PENDING' },
+      { id: 'REQ-002', name: 'Sita Devi', card: '2345-6789-0123', date: '2025-10-14', status: 'PENDING' },
+      { id: 'REQ-003', name: 'Ram Singh', card: '3456-7890-1234', date: '2025-10-16', status: 'PENDING' }
+    ];
+    const sampleAnn = [
+      { id: 'ANN-001', text: 'Ration distribution starts Monday.' },
+      { id: 'ANN-002', text: 'Carry your ration card & Aadhaar ID.' }
+    ];
+
+    function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+    function lsSet(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    function initStorage() {
+      if (!lsGet(LS_REQS)) lsSet(LS_REQS, sampleRequests);
+      if (!lsGet(LS_ANN)) lsSet(LS_ANN, sampleAnn);
+      if (!lsGet(LS_BIO)) lsSet(LS_BIO, 'ACTIVE');
+    }
+
+    const announcementList = document.getElementById('announcementList');
+    const announcementBox = document.getElementById('announcementBox');
+    const collapseBtn = document.getElementById('collapseBtn');
+    const toggleSidebar = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const requestsContainer = document.getElementById('requestsContainer');
+    const pendingCountEl = document.getElementById('pendingCount');
+    const sysBiometricStatus = document.getElementById('sysBiometricStatus');
+    const bioStatusBadge = document.getElementById('bioStatusBadge');
+    const sysDistFrom = document.getElementById('sysDistFrom');
+    const sysDistTo = document.getElementById('sysDistTo');
+    const sysStartTime = document.getElementById('sysStartTime');
+    const sysEndTime = document.getElementById('sysEndTime');
+
+    const pendingPanel = document.getElementById('pendingRequestsPanel');
+    const slotPanel = document.getElementById('slotMgmtPanel');
+    const bioPanel = document.getElementById('biometricPanel');
+
+    let glowTimeout;
+
+    function clearGlow() {
+      [pendingPanel, slotPanel, bioPanel].forEach(el => el.classList.remove('glow'));
+      if (glowTimeout) clearTimeout(glowTimeout);
+    }
+
+    function glowPanel(panel) {
+      clearGlow();
+      panel.classList.add('glow');
+      glowTimeout = setTimeout(() => panel.classList.remove('glow'), 5000);
+    }
+
+    document.getElementById('viewRequestsBtn').addEventListener('click', () => {
+      pendingPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      glowPanel(pendingPanel);
+    });
+
+    document.getElementById('slotMgmtBtn').addEventListener('click', () => {
+      slotPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      glowPanel(slotPanel);
+    });
+
+    document.getElementById('bioToggleBtn').addEventListener('click', () => {
+      bioPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      glowPanel(bioPanel);
+    });
+
+    [pendingPanel, slotPanel, bioPanel].forEach(panel => {
+      panel.addEventListener('click', () => { panel.classList.remove('glow'); if (glowTimeout) clearTimeout(glowTimeout); });
+    });
+
+    /*document.getElementById('addAnnBtn').addEventListener('click', ()=> {
+      const val = document.getElementById('announceInput').value.trim();
+      if(!val) return alert('Type an announcement first.');
+      const arr = lsGet(LS_ANN) || [];
+      const id = 'ANN-' + String(Date.now()).slice(-6);
+      arr.unshift({id, text: val});
+      lsSet(LS_ANN, arr);
+      document.getElementById('announceInput').value = '';
+      renderAnnouncements();
+    });
+    */
+
+    document.getElementById('addAnnBtn').addEventListener('click', () => {
+      const text = document.getElementById('announceInput').value.trim();
+      if (!text) return alert("Type announcement");
+
+      fetch("/api/add_announcement/", {
+        method: "POST",
+        credentials: "include",   // <--- Added
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      })
+        .then(r => r.json())
+        .then(() => {
+          document.getElementById('announceInput').value = "";
+          loadAnnouncements();
+        });
+    });
+
+
+//Update changes here ---->
+
+    function loadAnnouncements() {
+    fetch(`/api/get_announcements/{{user.shop_id}}/`,{
+          method: "GET",
+          credentials: "include"   //<---Added
+    })
+        
+        .then(r => r.json())
+        .then(data => {
+            announcementList.innerHTML = "";
+            data.announcements.forEach(a => {
+                const div = document.createElement("div");
+                div.className = "announcement-item";
+                div.innerHTML = `<div>${a.text}</div>`;
+                announcementList.appendChild(div);
+            });
+        });
+}
+
+    toggleSidebar.addEventListener('click', () => {
+      const collapsed = sidebar.classList.toggle('collapsed');
+      toggleSidebar.innerText = collapsed ? '⮞' : '⮜';
+    });
+
+    collapseBtn.addEventListener('click', () => { announcementBox.classList.toggle('collapsed'); });
+
+    function deleteAnnouncement(index) {
+      const arr = lsGet(LS_ANN) || [];
+      if (index >= 0 && index < arr.length) {
+        arr.splice(index, 1);
+        lsSet(LS_ANN, arr);
+        renderAnnouncements();
+      }
+    }
+
+    function renderAnnouncements() {
+      const arr = lsGet(LS_ANN) || [];
+      announcementList.innerHTML = '';
+      arr.forEach((a, index) => {
+        const div = document.createElement('div');
+        div.className = 'announcement-item';
+        div.innerHTML = `<div>${a.text}</div><button onclick="deleteAnnouncement(${index})">Delete</button>`;
+        announcementList.appendChild(div);
+      });
+    }
+
+    function renderRequests() {
+      const arr = lsGet(LS_REQS) || [];
+      requestsContainer.innerHTML = '';
+      arr.sort((a, b) => new Date(a.date) - new Date(b.date));
+      pendingCountEl.innerText = arr.filter(r => r.status === 'PENDING').length;
+      const table = document.createElement('table');
+      const th = document.createElement('tr');
+      th.innerHTML = `<th>S.NO</th><th>Name</th><th>Ration Card</th><th>Date</th><th>Status</th><th>Actions</th>`;
+      table.appendChild(th);
+      arr.forEach((r, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${index + 1}</td><td>${r.name}</td><td>${r.card}</td><td>${r.date}</td><td>${r.status}</td>
+          <td>
+            <button class="btn btn-approve" onclick="approveRequest(${index})">Approve</button>
+            <button class="btn btn-reject" onclick="rejectRequest(${index})">Reject</button>
+          </td>`;
+        table.appendChild(tr);
+      });
+      requestsContainer.appendChild(table);
+    }
+
+    function approveRequest(index) {
+      const arr = lsGet(LS_REQS) || [];
+      arr[index].status = 'APPROVED';
+      lsSet(LS_REQS, arr);
+      renderRequests();
+    }
+    function rejectRequest(index) {
+      const arr = lsGet(LS_REQS) || [];
+      arr[index].status = 'REJECTED';
+      lsSet(LS_REQS, arr);
+      renderRequests();
+    }
+
+    function renderBiometric() {
+      const val = lsGet(LS_BIO);
+      sysBiometricStatus.innerText = val;
+      bioStatusBadge.innerText = val;
+      bioStatusBadge.style.background = val === 'ACTIVE' ? '#28a745' : '#dc3545';
+      bioStatusBadge.style.color = 'white';
+    }
+
+    document.getElementById('bioToggleControl').addEventListener('click', () => {
+      fetch("/api/toggle_biometric/",{
+        method:"GET",
+        credentials: "include"    // ADDED
+      })
+        .then(r => r.json())
+        .then(data => {
+          bioStatusBadge.innerText = data.status;
+          sysBiometricStatus.innerText = data.status;
+
+          // Update color
+          bioStatusBadge.style.background = data.status === "ACTIVE" ? "#28a745" : "#dc3545";
+          bioStatusBadge.style.color = "white";
+        });
+    });
+
+
+
+
+    document.getElementById('applyBtn').addEventListener('click', () => {
+
+      if (!document.getElementById('confirmChk').checked) {
+        alert("Please check Confirm before applying changes.");
+        return;
+      }
+
+      const data = {
+        distribution_from: document.getElementById('distFrom').value,
+        distribution_to: document.getElementById('distTo').value,
+        start_time: document.getElementById('startTime').value,
+        end_time: document.getElementById('endTime').value,
+        slot_limit: document.getElementById('limitInput').value
+      };
+
+      fetch("/api/update_settings/", {
+        method: "POST",
+        credentials: "include",    // ADDED
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+        .then(r => r.json())
+        .then(() => {
+          alert("Settings updated for users!");
+        });
+
+    });
+
+    /*
+    document.getElementById('applyBtn').addEventListener('click', ()=>{
+      const chk = document.getElementById('confirmChk');
+      if(!chk.checked){
+        alert('Please check Confirm before applying changes.');
+        return;
+      }
+
+      
+      const from = document.getElementById('distFrom').value || null;
+      const to = document.getElementById('distTo').value || null;
+      const start = document.getElementById('startTime').value || '--:--';
+      const end = document.getElementById('endTime').value || '--:--';
+      sysDistFrom.innerText = from ? from.split('-').reverse().join('-') : 'null';
+      sysDistTo.innerText = to ? to.split('-').reverse().join('-') : 'null';
+      sysStartTime.innerText = start;
+      sysEndTime.innerText = end;
+      chk.checked = false;
+      alert('Dashboard updated for consumers!');
+    }); */
+
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+      const arr = (lsGet(LS_REQS) || []).filter(r => r.status === 'APPROVED');
+      if (arr.length === 0) { alert('No approved requests to download.'); return; }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Ration Distribution — Distributor Report', 105, 18, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Approved Slot Bookings Summary', 105, 26, { align: 'center' });
+      doc.setDrawColor(247, 129, 44);
+      doc.setLineWidth(0.8);
+      doc.line(20, 30, 190, 30);
+
+      const tableData = arr.map((r, i) => [i + 1, r.name, r.card, r.date, r.status]);
+      doc.autoTable({
+        startY: 38,
+        head: [['S.NO', 'Name', 'Ration Card', 'Date', 'Status']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [247, 129, 44], textColor: 255, fontStyle: 'bold', halign: 'center' },
+        bodyStyles: { halign: 'center', textColor: [50, 50, 50] },
+        columnStyles: { 0: { cellWidth: 15 }, 1: { cellWidth: 45 }, 2: { cellWidth: 50 }, 3: { cellWidth: 35 }, 4: { cellWidth: 30 } },
+        styles: { lineColor: [180, 180, 180], lineWidth: 0.2, fontSize: 11 },
+        didDrawPage: function (data) {
+          const page = doc.internal.getNumberOfPages();
+          doc.setFontSize(10);
+          doc.setTextColor(120, 120, 120);
+          doc.text(`Page ${page}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        }
+      });
+
+      const date = new Date().toLocaleString();
+      doc.setFontSize(10);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Generated on: ${date}`, 14, doc.internal.pageSize.height - 20);
+
+      doc.save('Approved_Booked_Slots.pdf');
+    });
+
+    function renderAll() {
+      loadAnnouncements();
+      renderRequests();
+      renderBiometric();
+    }
+
+    initStorage();
+    renderAll();
+  </script>
+</body>
+
+</html>

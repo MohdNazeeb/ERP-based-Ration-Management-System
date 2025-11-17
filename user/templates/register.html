@@ -1,0 +1,96 @@
+<!-- templates/register.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - Ration Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 style="text-align:center; color:maroon;">रजिस्ट्रेशन फॉर्म / Register</h2>
+
+
+  <form id="registerForm" method="post" enctype="multipart/form-data" action="{% url 'register' %}">
+    {% csrf_token %}
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+        {{ message }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <div class="form-group">
+      <label>राशन कार्ड प्रकार:</label>
+      <select name="card_type" required>
+        <option value="">-- चुनें --</option>
+        <option>Above Poverty Line (APL)</option>
+        <option>Below Poverty Line (BPL)</option>
+        <option>Priority Household (PHH)</option>
+        <option>Antyodaya (AAY) Ration card</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>पूरा नाम</label>
+      <input type="text" name="full_name" placeholder="अपना पूरा नाम दर्ज करें" required />
+    </div>
+
+    <div class="form-group">
+      <label>राशन कार्ड नंबर :</label>
+      <input type="text" name="card_number" placeholder="अपना राशन कार्ड नंबर दर्ज करें" required />
+    </div>
+
+    <div class="form-group">
+      <label>मोबाइल नंबर :</label>
+      <input type="tel" name="mobile_number" pattern="[0-9]{10}" maxlength="10" placeholder="10 अंकों का मोबाइल नंबर"
+        required />
+    </div>
+
+    <div class="form-group">
+      <label>Shop ID:</label>
+      <input type="text" name="shop_id" placeholder="अपनी डिस्ट्रिब्यूटर आईडी दर्ज करें" />
+    </div>
+
+    <div class="form-group">
+      <label>अपलोड फोटो (jpg format) :</label>
+      <input type="file" id="userPhoto" name="photo" accept=".jpg,.jpeg" />
+    </div>
+    <img id="userPhotoPreview" class="preview-img" alt="Photo Preview" />
+
+    <div class="form-group">
+      <label>कैप्चा डालें :</label>
+      <div class="captcha">
+        <div class="captcha-text" id="captcha1">abc12</div>
+        <input type="text" name="captcha_input" placeholder="कैप्चा दर्ज करें" required />
+        <button type="button" onclick="generateCaptcha('captcha1')">Refresh</button>
+      </div>
+    </div>
+
+    <!-- <div class="form-group">
+      <label>ओटीपी डालें :</label>
+      <input type="text" name="otp" placeholder="OTP" required />
+    </div> -->
+
+    <div class="form-group">
+      <label>नया पासवर्ड :</label>
+      <input type="password" name="password" placeholder="अपना नया पासवर्ड दर्ज करें" required />
+    </div>
+
+    <div style="text-align:center;">
+      <button type="submit">Submti</button>
+    </div>
+    <p style="margin-top:10px;">
+      Already have an account? <a href="/login/">Login here</a>
+    </p>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  generateCaptcha('captcha1');
+  previewImage('userPhoto', 'userPhotoPreview');
+</script>
+{% endblock %}
