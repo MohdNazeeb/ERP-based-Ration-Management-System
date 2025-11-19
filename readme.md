@@ -100,3 +100,82 @@ Smart-Ration-ERP/
       └── (Uploaded files such as images, documents)
 
 
+## 🧩 Module Overview
+
+The Smart Ration ERP project is organized into multiple Django apps, each responsible for a specific part of the system. Below is a clear overview of all modules:
+
+---
+
+### 🔵 **`user` App**
+This module manages all **user-side features**, including authentication and profile management.
+
+#### **Responsible For:**
+- User Login & Logout  
+- User Registration  
+- Serving static files (CSS/JS)  
+- Rendering user-facing HTML templates  
+- Handling user-related views and logic  
+
+#### **Important Files:**
+- `user/views.py` → User login, register, dashboard views  
+- `user/models.py` → User model extensions (if any)  
+- `user/templates/user/` → User HTML templates  
+- `user/static/user/` → CSS, JS, icons
+
+---
+
+### 🟠 **`distributor` App**
+This module handles everything related to ration distribution and distributors.
+
+#### **Responsible For:**
+- Distributor Login & Dashboard  
+- Ration Distribution Workflow  
+- Verifying Ration Cards / Families  
+- Managing Ration Stock  
+- Tracking Allocation History  
+- Rendering distributor UI pages  
+
+#### **Important Files:**
+- `distributor/views.py` → Distribution logic, dashboard  
+- `distributor/models.py` → Stock, Allocation, RationCard models  
+- `distributor/templates/distributor/` → Distributor HTML pages  
+
+---
+
+### ⚫ **`core` App**
+This is the central configuration app of your Django project.
+
+#### **Responsible For:**
+- Django project-level configuration  
+- Registering installed apps  
+- URL routing for all apps  
+- WSGI & ASGI application files  
+
+#### **Important Files:**
+- `core/settings.py` → Project settings  
+- `core/urls.py` → Global URL patterns  
+- `core/wsgi.py` → Deployment entry point  
+- `core/asgi.py` → Async server entry point  
+
+---
+
+### 🟣 **`media/` Directory**
+Stores all uploaded files such as:
+- Aadhaar images  
+- Ration card documents  
+- Proof images  
+
+---
+
+### 🟢 **Project Root**
+Contains essential files:
+- `manage.py` → Main command-line utility  
+- `requirements.txt` → Python package list  
+
+---
+
+## 📸 Screenshots & UI Preview
+
+![Login Screen](screenshots/login.png)
+![Distributor Dashboard](screenshots/dashboard.png)
+![Ration Allocation](screenshots/allocation.png)
