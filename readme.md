@@ -99,6 +99,7 @@ Smart-Ration-ERP/
 └── media/
       └── (Uploaded files such as images, documents)
 
+```
 
 ## 🧩 Module Overview
 
