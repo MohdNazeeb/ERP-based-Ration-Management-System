@@ -13,8 +13,8 @@ It manages distributors, citizens, transactions, authentication, inventory track
 
 ### 🧾 **Ration Distribution System**
 - Allocate ration based on predefined quotas  
-- Track issued ration, pending quotas, and distribution history  
-- Citizen verification with Aadhaar number  
+- Track issued ration, pending quotas, and distribution history
+- Citizen verification with Aadhaar number
 
 ### 📊 **Dashboard & Insights**
 - Visual dashboard for distributors  
@@ -176,6 +176,8 @@ Contains essential files:
 
 ## 📸 Screenshots & UI Preview
 
-![Login Screen](screenshots/login.png)
-![Distributor Dashboard](screenshots/dashboard.png)
-![Ration Allocation](screenshots/allocation.png)
+![Landing Page](screenshots/landing_page.png)
+![Login Screen](screenshots/login_page.png)
+![Distributor Dashboard](screenshots/distributor_portal.png)
+![User Dashboard](screenshots/user_portal.png)
+
